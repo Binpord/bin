@@ -11,22 +11,22 @@ def error_print(msg):
     sys.stderr.write("error:    in file '{}:{}' in function '{}':    {}\n".format(parent_frame.f_code.co_filename, 
                                         parent_frame.f_lineno, parent_frame.f_code.co_name, msg))
 
-def usage(prog_name):
+def usage():
     print('Usage:')
-    print('%s DATA_FILE [-f FUNCTOIN_FILE] [-x XLABEL] [-y YLABEL] [-o FILENAME] [--do-fit] [--help]' % sys.argv[0])
+    print('%s DATA_FILE [-f FUNCTOIN_FILE] [-x XLABEL] [-y YLABEL] [-o FILENAME] [--linear-fit | --poly-fit NUMBER] [--help]' % sys.argv[0])
 
 def read_data(filename):
     with open(filename, "r") as datafile:
         data = datafile.readlines()
         res = []
-        for i in range(0, len(data)):
+        for i in range(len(data)):
             res.append(np.fromstring(data[i], sep= ','))
     return res
 
 def main():
     if len(sys.argv) < 2:
         error_print("inappropriate arguments.")
-        usage(sys.argv[0])
+        usage()
         return 1
 
     data_filename = sys.argv[1]
@@ -36,7 +36,8 @@ def main():
     extern_func_filepath = ""
     xlabel = ""
     ylabel = ""
-    need_fitting = False
+    poly_fit = False
+    poly_fit_degree = 0
 
     # Parsing arguments. Checking only from 2nd, because 0 is progname, 1st is data_file.
     for i in range(2, len(sys.argv)):
@@ -50,10 +51,14 @@ def main():
         elif sys.argv[i] == "-o":
             save_to_file = True
             save_filename = sys.argv[i + 1]
-        elif sys.argv[i] == "--do-fit":
-            need_fitting = True
+        elif sys.argv[i] == "--linear-fit":
+            poly_fit = True
+            poly_fit_degree = 1
+        elif sys.argv[i] == "--poly-fit":
+            poly_fit = True
+            poly_fit_degree = int(sys.argv[i + 1])
         elif sys.argv[i] == "--help":
-            usage(sys.argv[0])
+            usage()
             return 0
 
     # read data from DATA_FILE
@@ -91,8 +96,8 @@ def main():
         plt.errorbar(plot_data[0], plot_data[1], xerr = plot_data[2], yerr = plot_data[2], fmt = 'o')
         plt.grid()
 
-        if need_fitting:
-            fit_coefs = np.polyfit(plot_data[0], plot_data[1], 1)
+        if poly_fit:
+            fit_coefs = np.polyfit(plot_data[0], plot_data[1], poly_fit_degree)
             print(fit_coefs)
             fit_fn = np.poly1d(fit_coefs)
 
