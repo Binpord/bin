@@ -5,6 +5,7 @@ import numpy as np
 import math
 import sys
 import importlib
+import scipy.interpolate
 
 def error_print(msg):
     parent_frame = sys._getframe(1)
@@ -13,7 +14,7 @@ def error_print(msg):
 
 def usage():
     print('Usage:')
-    print('%s DATA_FILE [-f FUNCTOIN_FILE] [-x XLABEL] [-y YLABEL] [-o FILENAME] [--linear-fit | --poly-fit NUMBER] [--help]' % sys.argv[0])
+    print('%s DATA_FILE [-f FUNCTOIN_FILE] [-x XLABEL] [-y YLABEL] [-o FILENAME] [--linear-fit | --poly-fit NUMBER | --cubic-approx] [-s STEPS] [--help]' % sys.argv[0])
 
 def read_data(filename):
     with open(filename, "r") as datafile:
@@ -38,6 +39,8 @@ def main():
     ylabel = ""
     poly_fit = False
     poly_fit_degree = 0
+    cubic_approx = False
+    num_of_steps = 10
 
     # Parsing arguments. Checking only from 2nd, because 0 is progname, 1st is data_file.
     for i in range(2, len(sys.argv)):
@@ -57,6 +60,10 @@ def main():
         elif sys.argv[i] == "--poly-fit":
             poly_fit = True
             poly_fit_degree = int(sys.argv[i + 1])
+        elif sys.argv[i] == "--cubic-approx":
+            cubic_approx = True
+        elif sys.argv[i] == "-s":
+            num_of_steps = int(sys.argv[i + 1])
         elif sys.argv[i] == "--help":
             usage()
             return 0
@@ -103,8 +110,18 @@ def main():
 
             minX = np.amin(plot_data[0])
             maxX = np.amax(plot_data[0])
-            stepX = (maxX - minX) / 10
+            stepX = (maxX - minX) / num_of_steps
             fitX = np.arange(minX, maxX + stepX, stepX)
+            fitY = fit_fn(fitX)
+
+            plt.plot(fitX, fitY)
+        elif cubic_approx:
+            fit_fn = scipy.interpolate.interp1d(plot_data[0], plot_data[1], kind = 'cubic')
+
+            minX = np.amin(plot_data[0])
+            maxX = np.amax(plot_data[0])
+            stepX = (maxX - minX) / num_of_steps
+            fitX = np.arange(minX, maxX, stepX)
             fitY = fit_fn(fitX)
 
             plt.plot(fitX, fitY)
