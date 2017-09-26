@@ -104,7 +104,7 @@ def main():
             minX = np.amin(plot_data[0])
             maxX = np.amax(plot_data[0])
             stepX = (maxX - minX) / args.num_of_steps
-            fitX = np.arange(minX, maxX, stepX)
+            fitX = np.arange(minX, maxX + stepX, stepX)
             fitY = fit_fn(fitX)
 
             plt.plot(fitX, fitY)
