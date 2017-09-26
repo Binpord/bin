@@ -68,6 +68,9 @@ def main():
             usage()
             return 0
 
+    if cubic_approx & num_of_steps < 100:
+        num_of_steps = 100
+
     # read data from DATA_FILE
     data = read_data(data_filename)
 
