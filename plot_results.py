@@ -6,6 +6,7 @@ import math
 import sys
 import importlib
 import scipy.interpolate
+import argparse
 
 def error_print(msg):
     parent_frame = sys._getframe(1)
@@ -25,61 +26,40 @@ def read_data(filename):
     return res
 
 def main():
-    if len(sys.argv) < 2:
-        error_print("inappropriate arguments.")
-        usage()
-        return 1
+    parser = argparse.ArgumentParser(description="Plot results from csv-like formated files.")
+    parser.add_argument("data_filename", metavar="DATA_FILE", type=str,
+                        help="path to the data file")
+    parser.add_argument("-f", "--func", dest="extern_func_filepath", type=str,
+                        help="file, containing extern calculate(...) function")
+    parser.add_argument("-x", dest="xlabel", type=str, default="",
+                        help="xlabel for the plot")
+    parser.add_argument("-y", dest="ylabel", type=str, default="",
+                        help="ylabel for the plot")
+    parser.add_argument("-o", dest="save_filepath", type=str,
+                        help="path to the .png file to save resulting plot")
+    parser.add_argument("--linear-fit", dest="poly_fit_degree", action="store_const", const=1,
+                        help="linear fit; is equal to '--poly-fit 1'")
+    parser.add_argument("--poly-fit", dest="poly_fit_degree", type=int,
+                        help="polynomial fit")
+    parser.add_argument("--cubic-approx", dest="cubic_approx", action="store_const", const=True,
+                        help="cubic approximation")
+    parser.add_argument("-s", "--steps", dest="num_of_steps", type=int, default=10,
+                        help="custom number of steps in subplot")
 
-    data_filename = sys.argv[1]
-    save_to_file = False
-    save_filename = ""
-    extern_func = False
-    extern_func_filepath = ""
-    xlabel = ""
-    ylabel = ""
-    poly_fit = False
-    poly_fit_degree = 0
-    cubic_approx = False
-    num_of_steps = 10
+    args = parser.parse_args()
 
-    # Parsing arguments. Checking only from 2nd, because 0 is progname, 1st is data_file.
-    for i in range(2, len(sys.argv)):
-        if sys.argv[i] == "-f":
-            extern_func = True
-            extern_func_filepath = sys.argv[i + 1]
-        elif sys.argv[i] == "-x":
-            xlabel = sys.argv[i + 1]
-        elif sys.argv[i] == "-y":
-            ylabel = sys.argv[i + 1]
-        elif sys.argv[i] == "-o":
-            save_to_file = True
-            save_filename = sys.argv[i + 1]
-        elif sys.argv[i] == "--linear-fit":
-            poly_fit = True
-            poly_fit_degree = 1
-        elif sys.argv[i] == "--poly-fit":
-            poly_fit = True
-            poly_fit_degree = int(sys.argv[i + 1])
-        elif sys.argv[i] == "--cubic-approx":
-            cubic_approx = True
-        elif sys.argv[i] == "-s":
-            num_of_steps = int(sys.argv[i + 1])
-        elif sys.argv[i] == "--help":
-            usage()
-            return 0
-
-    if cubic_approx & num_of_steps < 100:
-        num_of_steps = 100
+    if args.cubic_approx & args.num_of_steps < 100:
+        args.num_of_steps = 100
 
     # read data from DATA_FILE
-    data = read_data(data_filename)
+    data = read_data(args.data_filename)
 
     # If "-f" specified, importing function calculate from FUNCTION_FILE and calculating data.
     # Else ploting the two data sets.
-    if extern_func:
-        extern_func_last_sep = extern_func_filepath.rfind('/')
-        extern_func_filedir = extern_func_filepath[:extern_func_last_sep]
-        extern_func_filename = extern_func_filepath[extern_func_last_sep + 1:]
+    if args.extern_func_filepath is not None:
+        extern_func_last_sep = args.extern_func_filepath.rfind('/')
+        extern_func_filedir = args.extern_func_filepath[:extern_func_last_sep]
+        extern_func_filename = args.extern_func_filepath[extern_func_last_sep + 1:]
         sys.path.append(extern_func_filedir)
         if extern_func_filename[-3:] == ".py":
             extern_module = importlib.import_module(extern_func_filename[:-3])
@@ -100,39 +80,39 @@ def main():
         plt.rc('font', family = 'serif')
 
         plt.figure()
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(args.xlabel)
+        plt.ylabel(args.ylabel)
 
         plt.errorbar(plot_data[0], plot_data[1], xerr = plot_data[2], yerr = plot_data[2], fmt = 'o')
         plt.grid()
 
-        if poly_fit:
-            fit_coefs = np.polyfit(plot_data[0], plot_data[1], poly_fit_degree)
+        if args.poly_fit_degree is not None:
+            fit_coefs = np.polyfit(plot_data[0], plot_data[1], args.poly_fit_degree)
             print(fit_coefs)
             fit_fn = np.poly1d(fit_coefs)
 
             minX = np.amin(plot_data[0])
             maxX = np.amax(plot_data[0])
-            stepX = (maxX - minX) / num_of_steps
+            stepX = (maxX - minX) / args.num_of_steps
             fitX = np.arange(minX, maxX + stepX, stepX)
             fitY = fit_fn(fitX)
 
             plt.plot(fitX, fitY)
-        elif cubic_approx:
+        elif args.cubic_approx:
             fit_fn = scipy.interpolate.interp1d(plot_data[0], plot_data[1], kind = 'cubic')
 
             minX = np.amin(plot_data[0])
             maxX = np.amax(plot_data[0])
-            stepX = (maxX - minX) / num_of_steps
+            stepX = (maxX - minX) / args.num_of_steps
             fitX = np.arange(minX, maxX, stepX)
             fitY = fit_fn(fitX)
 
             plt.plot(fitX, fitY)
 
-    if save_to_file:
-        if save_filename[-4:] != ".png":
-            save_filename += ".png"
-        plt.savefig(save_filename, format = 'png')
+    if args.save_filepath is not None:
+        if args.save_filepath[-4:] != ".png":
+            args.save_filepath += ".png"
+        plt.savefig(args.save_filepath, format = 'png')
     else:
         plt.show()
 
