@@ -44,8 +44,16 @@ def main():
 
     args = parser.parse_args()
 
-    if args.cubic_approx & args.num_of_steps < 100:
+    if args.cubic_approx == True & args.num_of_steps < 100:
         args.num_of_steps = 100
+
+    # plot the result
+    plt.rc('text', usetex = True)
+    plt.rc('font', family = 'serif')
+
+    plt.figure()
+    plt.xlabel(args.xlabel)
+    plt.ylabel(args.ylabel)
 
     # read data from DATA_FILE
     data = read_data(args.data_filename)
@@ -71,13 +79,6 @@ def main():
         if len(plot_data) != 4:
             error_print("inappropriate result from calculate")
             return 1
-        # plot the result
-        plt.rc('text', usetex = True)
-        plt.rc('font', family = 'serif')
-
-        plt.figure()
-        plt.xlabel(args.xlabel)
-        plt.ylabel(args.ylabel)
 
         plt.errorbar(plot_data[0], plot_data[1], xerr = plot_data[2], yerr = plot_data[2], fmt = 'o')
         plt.grid()
