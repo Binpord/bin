@@ -13,10 +13,6 @@ def error_print(msg):
     sys.stderr.write("error:    in file '{}:{}' in function '{}':    {}\n".format(parent_frame.f_code.co_filename, 
                                         parent_frame.f_lineno, parent_frame.f_code.co_name, msg))
 
-def usage():
-    print('Usage:')
-    print('%s DATA_FILE [-f FUNCTOIN_FILE] [-x XLABEL] [-y YLABEL] [-o FILENAME] [--linear-fit | --poly-fit NUMBER | --cubic-approx] [-s STEPS] [--help]' % sys.argv[0])
-
 def read_data(filename):
     with open(filename, "r") as datafile:
         data = datafile.readlines()
