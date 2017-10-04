@@ -27,9 +27,11 @@ def main():
                         help="path to the data file")
     parser.add_argument("-f", "--func", dest="extern_func_filepath", type=str,
                         help="file, containing extern calculate(...) function")
-    parser.add_argument("-x", dest="xlabel", type=str, default="",
+    parser.add_argument("-t", "--title", dest="title", type=str,
+                        help="title for the plot")
+    parser.add_argument("-x", "--xlabel", dest="xlabel", type=str, default="",
                         help="xlabel for the plot")
-    parser.add_argument("-y", dest="ylabel", type=str, default="",
+    parser.add_argument("-y", "--ylabel", dest="ylabel", type=str, default="",
                         help="ylabel for the plot")
     parser.add_argument("-o", dest="save_filepath", type=str,
                         help="path to the .png file to save resulting plot")
@@ -54,6 +56,9 @@ def main():
     plt.figure()
     plt.xlabel(args.xlabel)
     plt.ylabel(args.ylabel)
+
+    if args.title is not None:
+        plt.title(args.title)
 
     # read data from DATA_FILE
     data = read_data(args.data_filename)
