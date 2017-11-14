@@ -46,7 +46,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.cubic_approx == True & args.num_of_steps < 100:
+    if (args.cubic_approx == True | (args.poly_fit_degree is not None)) & args.num_of_steps < 100:
         args.num_of_steps = 100
 
     # plot the result
