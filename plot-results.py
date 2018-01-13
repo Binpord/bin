@@ -8,6 +8,61 @@ import importlib
 import scipy.interpolate
 import argparse
 
+class Graph:
+    x = []
+    y = []
+    xerr = 0
+    yerr = 0
+    poly_fit_degree = None
+    custom_fit_borders = None
+    cubic_approx = False
+
+    def __init__(self, x, y):
+        # assuming x and y be array-like variables
+        try:
+            assert len(x) == len(y)
+        except (AttributeError, TypeError):
+            raise AssertionError('values should be array-like')
+
+        self.x = x, self.y = y
+
+    def set_values(self, x, y):
+        # assuming x and y be array-like variables
+        try:
+            assert len(x) == len(y)
+        except (AttributeError, TypeError):
+            raise AssertionError('values should be array-like')
+
+        self.x = x, self.y = y
+
+    def set_errors(self, xerr, yerr):
+        # assuming xerr and yerr be either scalar or array-like variables
+        try:
+            assert len(xerr) == len(yerr) and len(xerr) == len(x)
+        except (AttributeError, TypeError):
+            # do nothing, as we assume xerr and yerr to be scalar
+            pass
+
+        self.xerr = xerr, self.yerr = yerr
+
+    def set_poly_fit(self, degree):
+        assert type(degree) == int
+        self.poly_fit_degree = degree
+
+    def set_custom_fit_borders(self, borders):
+        # assuming borders to be array-like variable with 2 elements
+        # (upper and lower border)
+        try:
+            assert len(borders) == 2
+        except (AttributeError, TypeError):
+            raise AssertionError('borders variable should be array-like')
+
+        self.custom_fit_borders = borders
+
+    def set_cubic_approx(self, value):
+        assert type(value) == bool
+        self.cubic_approx = value
+
 def error_print(msg):
     parent_frame = sys._getframe(1)
     sys.stderr.write("error:    in file '{}:{}' in function '{}':    {}\n".format(parent_frame.f_code.co_filename, 
@@ -46,8 +101,8 @@ def main():
 
     args = parser.parse_args()
 
-    if (args.cubic_approx == True or args.poly_fit_degree is not None) and args.num_of_steps < 100:
-        args.num_of_steps = 100
+    if (args.cubic_approx == True or args.poly_fit_degree is not None) and args.num_of_steps < 300:
+        args.num_of_steps = 300
 
     # plot the result
     plt.rc('text', usetex = True)
@@ -106,7 +161,7 @@ def main():
             minX = np.amin(plot_data[0])
             maxX = np.amax(plot_data[0])
             stepX = (maxX - minX) / args.num_of_steps
-            fitX = np.arange(minX, maxX + stepX, stepX)
+            fitX = np.arange(minX, maxX, stepX)
             fitY = fit_fn(fitX)
 
             plt.plot(fitX, fitY)
