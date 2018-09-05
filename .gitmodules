@@ -1,0 +1,3 @@
+[submodule "install.py"]
+	path = install.py
+	url = https://github.com/Binpord/install.py.git
