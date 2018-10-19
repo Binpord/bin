@@ -1,7 +1,7 @@
 $HOME/bin:
 jupyter-notebook.sh
 maketex
-pdbc
+pdb
 plot-results.py
 rate-pacman-mirrors
 ycm_install.sh
