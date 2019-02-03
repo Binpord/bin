@@ -1,4 +1,4 @@
 #!/bin/bash
 
-ssh -T -N proxy
+ssh -T -N vps-proxy-forward
 
